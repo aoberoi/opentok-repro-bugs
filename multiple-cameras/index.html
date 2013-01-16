@@ -1,0 +1,38 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multiple Cameras Bug</title>
+  <script src="http://static.opentok.com/v1.1/js/TB.min.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+</head>
+<body>
+
+  <h1>Multiple Cameras Bug</h1>
+
+  <p>
+  There are two ways to get two camera's from the same client publishing into a session.
+  The first is to connect to the session and call
+  session.publish(replacedId, { cameraName : camera }). The second is to call
+  TB.initPublisher(apiKey, replacedId, { cameraName : camera }) and then later call
+  session.publish(publisher) for each of the previously returned publishers.
+  </p>
+
+  <h2>Attached Publishers</h2>
+
+  <section class="attached">
+    <div class="pub-container"></div>
+    <button class="attached run">Run Test</button>
+  </section>
+
+  <h2>Detached Publishers</h2>
+
+  <section class="detached">
+    <div class="pub-container"></div>
+    <button class="detached run">Run Test</button>
+  </section>
+
+  <script src="tests.js"></script>
+
+</body>
+</html>
