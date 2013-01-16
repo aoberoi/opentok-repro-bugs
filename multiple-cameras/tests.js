@@ -7,7 +7,7 @@ var session;
 var cameraNames = [];
 function devicesDetectedHandler(event) {
   for (var i = 0; i < event.cameras.length; ++i) {
-    cameraNames.push(event.cameras[i].cameraName);
+    cameraNames.push(event.cameras[i].name);
   }
   cameraNamesRetrieved();
 }
@@ -30,16 +30,26 @@ function cameraNamesRetrieved() {
       var parentElement = $('.detached .pub-container')[0];
       var publishers = [];
       var pub, id;
+      var eventAggregator = new EventAggregator('accessAllowed', allAllowedHandler);
+
       disableInteractions(this, 'detached', detachedHandler);
+
       for (var i = 0; i < cameraNames.length; ++i) {
         id = createPublisherElement(parentElement, cameraNames[i]);
         pub = TB.initPublisher(apiKey, id, { cameraName : cameraNames[i] });
         publishers.push(pub);
+        eventAggregator.observeObject(pub);
       }
+
       session.addEventListener('sessionConnected', function() {
         attachPublishers(publishers);
       });
-      session.connect(apiKey, token);
+
+      eventAggregator.begin();
+
+      function allAllowedHandler() {
+        session.connect(apiKey, token);
+      }
     });
   }
 }
@@ -113,3 +123,29 @@ $(function() {
   // clause into the dom loaded handler
   deviceManager.detectDevices();
 });
+
+// Event Aggregator
+function EventAggregator(event, cb) {
+  this.event = event;
+  this.cb = cb;
+  this.observedObjects = [];
+  this.hasBegun = false;
+}
+
+EventAggregator.prototype.observeObject = function (obj) {
+  var self = this;
+  self.observedObjects.push(obj);
+  obj.addEventListener(self.event, function(event) {
+    var idx;
+    if (self.hasBegun && (idx = self.observedObjects.indexOf(obj)) !== -1 ) {
+      self.observedObjects.splice(idx, 1);
+      if (self.observedObjects.length === 0) {
+        self.cb();
+      }
+    }
+  });
+};
+
+EventAggregator.prototype.begin = function() {
+  this.hasBegun = true;
+};
